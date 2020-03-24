@@ -1,0 +1,86 @@
+---
+title: "ggplot Chapter"
+author: "Hanh Nguyen"
+date: "3/22/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+ggplot - grammar of graphics - a system for describing and building graphs.
+
+install.package()
+library()
+
+Call package to use function in package
+package::function()
+	- ggplot2::ggplot()
+
+Data frame: a rectangular collection of variables (in the columns) and observations (in the rows)
+	- mpg: contains observations collected by the US Environment Protection Agency on 38 models of cars
+
+ggplot() - create a coordinate system that you can add layers too
+	- ggplot(data = ----)  - creates an empty graph
+
+geom_point() 
+	- adds a layer of points to the plot which creates a scatterplot
+	- ggplot2 comes with many geom functions that each add a different type of layer to a plot
+	- geom_point(mapping = aes(x = variable, y = variable))
+
+#### ggplot(data = <DATA>) + <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))
+
+
+EXERCISES
+### 1. Run ggplot(data = mpg). What do you see?
+```{r}
+library("tidyverse")
+ggplot2::mpg
+ggplot(data = mpg)
+```
+  It creates an empty graph.
+  
+### 2. How many rows are in mtcars? How many columns?
+```{r}
+nrow(mtcars)
+length(mtcars)
+```
+ There're 32 rows and 11 columns.
+ 
+### 3. What does the drv variables describe? Read the help for ?mpg to find out.
+```{r}
+?mpg
+```
+drv is the type of drive train, where f = front-wheel drive, r =  rear wheel drive, 4 = 4wd
+
+### 4. Make a scatterplot of hwy versus cyl
+```{r}
+ggplot(data = mpg) + geom_point(mapping = aes(x = hwy, y = cyl))
+```
+
+### 5. What happens if you make a scatter plot of class versus drv? Why is the plot not useful?
+```{r}
+ggplot(data = mpg) + geom_point(mapping = aes(x = class, y = drv))
+```
+The plot is not usefull because it could not present the relationship between the two variables, thus, it is impossible to make connection for further result discusstion.
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
