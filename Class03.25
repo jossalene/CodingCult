@@ -1,0 +1,89 @@
+---
+title: "ggplot.chapter1"
+author: "Hanh Nguyen"
+date: "3/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Load tidyverse
+```{r}
+library(tidyverse)
+```
+mpg data set
+```{r}
+mpg
+View(mpg)
+```
+
+To get information about the dataset, use the help file
+```{r}
+help(mpg)
+```
+or
+```{r}
+?mpg
+```
+```{r}
+str(mpg)
+```
+
+There re 7 layers in ggplot
+```{r}
+ggplot(data = mpg) + geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+```{r}
+ggplot(data = mpg) + geom_point(mapping = aes(x = displ, y = hwy, color = class))
+```
+
+alpha: different shading and transparency
+```{r}
+ggplot(data = mpg) + geom_point(mapping = aes(x = displ, y = hwy, alpha = class))
+```
+
+shape
+only can do 6 dicrete variables, any variable above 6th variable will not be coded
+```{r}
+ggplot(data = mpg) + geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+```
+
+```{r}
+ggplot(data = mpg) + geom_point(mapping = aes(x = displ, y = hwy), color = "green")
+```
+
+ggplot(data = mpg) + geom_point(mapping = aes(x = displ, y = hwy), color = "green")
+
+
+FACET breaks down graph to subgraphs based on discrete variables
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_wrap(~class)
+```
+
+only want 2 rows of graphs
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_wrap(~class, nrow = 2)
+```
+
+2 columns
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_wrap(~class, ncol = 2)
+```
+
+grid
+variables should be discrete variables
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ cyl)
+```
+
