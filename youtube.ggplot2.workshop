@@ -1,8 +1,8 @@
-____________________________________________________
+___________________________________________________________
 PLOTTING ANYTHING WITH GGPLOT2 - THOMAS LIN PEDERSON
-____________________________________________________
+___________________________________________________________
 https://www.youtube.com/watch?v=h29g21z0a68&feature=youtu.be
-_____________________________________________________
+____________________________________________________________
  
  Faithful dataset --> give info on the eruption pattern of the Old Faithful geyger in Yellowstone National Park.
 ```{r}
