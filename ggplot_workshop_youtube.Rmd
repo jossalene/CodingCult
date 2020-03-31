@@ -1,0 +1,519 @@
+---
+title: "ggplot_workshop_youtube"
+author: "Hanh Nguyen"
+date: "3/31/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+___________________________________________________________
+PLOTTING ANYTHING WITH GGPLOT2 - THOMAS LIN PEDERSON
+___________________________________________________________
+https://www.youtube.com/watch?v=h29g21z0a68&feature=youtu.be
+____________________________________________________________
+ 
+ Faithful dataset --> give info on the eruption pattern of the Old Faithful geyger in Yellowstone National Park.
+```{r}
+data("faithful")
+faithful
+```
+ Scatterplot
+```{r}
+ggplot(data = faithful, mapping = aes(x = eruptions, y = waiting)) + geom_point()
+```
+ Data mapping can be given both as global (in ggplot()) or per layer.
+```{r}
+ggplot() + geom_point(mapping = aes(x = eruptions, y = waiting), data = faithful)
+```
+ -------------------------------------------
+ The Grammar of Graphics book (1st ed, 1999)
+ . A theoretical deconstrution of data graphics.
+ . Foundation for many graphic applications
+    - ggplot2
+    - Polaris (-> Tableau)
+    - Vega-Lite
+  . Interested in how to design the system that allows choosing chart types, making attractive charts, and how to calculate the correct position of the data 
+  
+--> Idea: creating graphics and charts by functions
+  . Previous idea:
+    - grammar of graphic is composed by 4 chart types: Pie, Line, Bar Chart and Scatterplots
+  . His idea is trying to decompose graphics in to its consituents:
+    - theme
+    - coordinates
+    - facets
+    - geomertries
+    - scales
+    - statistics
+    - mapping
+    - data
+    ---> how all these constituents relate to each other
+    ---> grammar of graphics is theory around structure of graphic.
+    
+
+_____________    
+ The Grammar
+_____________
+
+*mapping*
+. Allow generic datasets to be understood by the graphic system.
+. Aesthetic mapping: Link variables in data to graphical properties in the geometry.
+. Facet mapping: Link variables in the data to panels in the facet layout.
+
+*statistics*
+. Eventhough data is tidy, it may not represent the displayed values.
+. Transform input variables to displayed values:
+  - Count number of observation in each categor for a bar chart
+  - Calculate summary statistics for a boxplot
+. Is implicit in many plot-types but can often be done prior to plotting.
+
+*scales*
+. Most data does not directly represent graphical properties.
+. A scale translate back and forth between variable ranges and property ranges.
+  - Categories -> Color
+  - Numbers -> Position
+  - ...
+. Imply a specific interpretation of values; discrete, continuous, etc.
+
+*geometries*
+. How to interpret aesthetics as graphical representations.
+. Is a progression of positional aesthetics a number of points, a line, a single polygon, or something else entirely?
+. To a high degree the determinator of your plot type.
+
+*facet*
+. Define the number of panels with equal logic and split data among them..
+. Small multiples
+  - Allows you to look at small subsets of your data in seperate plots
+. Panel layout may carry meaning.
+
+*corrdinates*
+. Positional aesthetics are special.
+  1. Variable are mapped, scaled, applied to a geometry
+  2. But in the end, the position values are interpreted by a coordinate system
+. Defines the physical mapping of the aesthetics to the paper.
+. Vaguely similar to color profile mapping for color aesthetics(though you don't have control over it)
+
+*theme*
+. None of the priors talked about the visual look of the plot.
+. Theming spans every part of the graphic that is not linked to data
+
+_________________
+ THE GGPLOT2 API 
+_________________
+
+*ggplot2*
+. Grammar of graphics is a design system
+. ggplot2 is an implementation.
+. Hadleys grammar != Lelands grammar
+  - Sometimes real life gets in the way
+. The spirit lives on
+. Other implementations:
+  - Tableau
+  - Vega-Lite
+```{r}
+# Basic scatterplot
+ggplot(data = faithful, mapping = aes(x = eruptions, y = waiting)) + 
+  geom_point()
+
+# Data and mapping can be given both as global (in ggplot()) or per layer.
+ggplot() + geom_point(mapping = aes(x = eruptions, y = waiting), 
+                      data = faithful)
+```
+
+. ggplot argument breakdown:
+  - data =     
+      -> which dataset to plot
+  - mapping = aes(x =   , y =   )
+      -> which columns to use for x and y
+  - +
+      -> combine gglot2 elements, adding layers to the plot
+  - geom_point()
+      -> how to draw the plot
+```{r}
+# Mapping color
+ggplot(faithful) + 
+  geom_point(aes(x =  eruptions,
+                 y = waiting,
+                 color = eruptions < 3))
+# or
+ggplot(faithful) + geom_point(aes(x = eruptions, 
+                                  y = waiting 
+                                  ), color = 'steelblue')
+```
+
+. Together with the aesthics code, we can add:
+  - color = <column-name>
+      -> make color for variables
+      -> this code should be added inside the mapping code
+  - color = 'color-name' or size
+      -> set color for the geom_point of all variables.
+      -> this code should be outside of the mapping code, but still inside the geom_point()
+```{r}
+#different types of geoms
+ggplot(faithful) + geom_histogram(aes(x = eruptions))
+```
+
+. There are many types of geoms. Different geoms have different requirements.
+  - ex: geom_histogram only need x
+```{r}
+# Layers are stacked in the order of code appearance
+ggplot(faithful, aes(x = eruptions, y = waiting)) + 
+  geom_density_2d() + geom_point()
+```
+
+*Exercise*
+1. Modify the code below to make the points larger squares and slightly transparent.
+```{r}
+?geom_point
+# the orignal code:
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting))
+# edited code
+ggplot(faithful) + geom_point(aes(x = eruptions, y = waiting), shape = 15, alpha = 1/2)
+```
+
+2. Color the two distributions in the histogram with different colors
+```{r}
+ggplot(faithful) +
+  geom_histogram(aes(x = eruptions), color = "skyblue", fill = "skyblue")
+
+ggplot(faithful) +
+  geom_histogram(aes(x = eruptions, color = eruptions < 3, fill = eruptions < 3))
+
+ggplot(faithful) +
+  geom_histogram(aes(x = eruptions, fill = waiting < 60))
+
+ggplot(faithful) +
+  geom_histogram(aes(x = eruptions, fill = waiting < 60), position = 'dodge', alpha = 0.3)
+
+ggplot(faithful) +
+  geom_histogram(aes(x = eruptions, fill = waiting < 60), position = 'identity', alpha = 0.3)
+```
+
+3. Add a line that separates the two point distributions.
+```{r}
+?geom_abline
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting)) + geom_abline(slope = -40, intercept = 200)
+```
+
+
+*statistics*
+- Linked to geomertries
+- Every geom has a default stat(istic)
+- A layer can be created with a call to stat_*() or geom_*(), but community has coalesced around geom_*()
+
+We will use the 'mpg' dataset giving information about fuel economy on different car models.
+
+Every geom has a stat. This is why new data ('count') can appear when using 'geom_bar()
+
+The stat can be over written. If we have precomputed count we don't want any additional computations to perform and we use the 'identity' stat to leave the data alone.
+```{r}
+# geom_bar() uses stat_count() by default
+ggplot(mpg) + 
+  geom_bar(aes(x = class))
+```
+```{r}
+# If you have precomputed data, use identity stat
+mpg_counted <-  mpg %>%
+  count(class, name = 'count')
+mpg_counted
+
+ggplot(mpg_counted) + geom_bar(aes(x = class, y = count), stat = 'identity')
+```
+
+```{r}
+# or use the geom_col() shortcut
+mpg_counted <- mpg %>%
+  count(class, name ='count')
+
+ggplot(mpg_counted) + 
+  geom_col(aes(x = class, y = count))
+```
+
+```{r}
+# use after_stat() to modify mapping from stats (here we calculate %)
+ggplot(mpg) + 
+  geom_bar(
+    aes(
+      x = class,
+      y = after_stat(100 * count / sum(count))
+    )
+  )
+```
+
+```{r}
+# many stats provide multiple calculated values and use one by default (here 'density')
+ggplot(mpg) +
+  geom_density(aes(x = hwy))
+# As before, these can be accessed with the after_stat() function
+ggplot(mpg) + 
+  geom_density((aes(x = hwy, y = after_stat(scaled))))
+```
+
+*Exercise*
+1. While most people use 'geom_*()' when adding layers, it is just as valid to add a 'stat_*()' with an attached geom. Look at 'geom_bar()' and figure out which stat it uses as default. Then modify the code to use the stat directly instead (i.e. adding 'stat_*()' instead of 'geom_bar()')
+```{r}
+# original code
+ggplot(mpg) + 
+  geom_bar(aes(x = class))
+# edit code
+ggplot(mpg) +
+  stat_count(aes(x = class))
+# eventhough the default geom in stat is bar, we can overwrite it with point by:
+ggplot(mpg) +
+  stat_count(aes(x = class), geom = 'point')
+```
+
+2. Use 'stat_summary()' to add a red dot at the mean 'hwy' for each group.
+```{r}
+# original code
+ggplot(mpg) + 
+  geom_jitter(aes(x = class, y = hwy), width = 0.2)
+# edited code
+ggplot(mpg) + 
+  geom_jitter(aes(x = class, y = hwy), width = 0.2) + 
+  stat_summary(aes(x = class, y = hwy), geom = 'point', color = 'red', size = 2)
+```
+
+
+*Scales*
+. Scales define how the mapping you specify inside 'aes()' should happen. All mappings have an associated scale even if not specified
+. Everything inside aes() will have a scale
+  - If non is provided it will get a default
+. Scales follow a predictable naming scheme: 
+    scale_<aesthetic>_<type>()
+. <type> can either be a generic (continuous, discrete, or binned) or specific (e.g. area, for scaling size to circle area)
+```{r}
+# based on the vector type of class, a discrete color scale is picked
+ggplot(mpg) + 
+  geom_point(
+    aes(x = displ, y = hwy, color = class)
+  )
+# we take control by adding our own explicitly.
+# while function name is predictable, arguments are not.
+ggplot(mpg) +
+  geom_point(
+    aes(x = displ, y = hwy, color = class)
+  ) +
+  scale_color_brewer(type = 'qual')
+#adding name to legend
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, color = class)) +
+  scale_color_brewer(name = 'CLASS', type = 'qual')
+```
+
+```{r}
+# x and y are also controlled with scales
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  scale_x_continuous(breaks = c(3, 5, 6)) + 
+  scale_y_continuous(trans = 'log10')
+```
+
+*Exercise*
+1. Use 'RColorBrewer::display.brewer.all()' to see all the different palettes from Color Brewer and pick your favorite. Modify the code below to use it.
+```{r}
+RColorBrewer::display.brewer.all()
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, color = class)) + 
+  scale_color_brewer(palette = 'Pastel2')
+```
+
+2. Modify the code below to create a bubble chart (scatterplot with size mapped to a continuous variable) showing 'cyl' with size. Make sure that only the present amount of cylinders (4, 5, 6, and 8) are present in the legend
+```{r}
+# original plot
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, color = class)) + 
+  scale_color_brewer(type = 'qual')
+# edited code
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, color = class, size = cyl)) + 
+  scale_color_brewer(type = 'qual') + 
+  scale_size_area(breaks = c(4, 5, 6, 8))
+```
+
+3. Modify the code below so that color is no longer mapped to the discrete 'class' variable, but to the continuous 'cty' variable. What happens to the guide?
+```{r}
+# original code:
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, color = class, size = cty))
+# edited code:
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, color = cty, size = cty))
+```
+
+4. The type of guide can be controlled with the 'guide' argument in the scale, or with the 'guide()' function. Continuous colors have a gradient color bar by default, but setting it to 'legend' will turn it back to the standard look. What happes when multiple aesthetics are mapped to the same variable and uses the guide type?
+```{r}
+# original plot
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, color = cty, size = cty))
+# edited plot
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, color = cty, size = cty)) + 
+  scale_size(name = 'CTY') + 
+  guides(color = 'legend')
+```
+
+
+*Facets*
+. The facet defines how data is split among panels. The default facet ('facet_null()') puts all the data in a single panel, while `facet_wrap()` and `facet_grid()` allows you to specify different types of small multiples.
+. Split data into multiple panels
+. Each panel is a representation of the same underlying logic
+. Should not beused to combine multiple separate plots
+. ggplot2 provide two facets for splitting data by categories
+```{r}
+# faceting is often the best way to avoid overplotting
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class)
+```
+
+```{r}
+# facet_grid() provides a way of doing graphic pivots
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_grid(year~drv)
+```
+
+*Exercise*
+1. One of the greatest things about facets is that they share the axes between the different panels. Sometimes this is undesirable though, and the behavior can be changed with the `scales` argument. Experiment with the different possible settings in the plot below:
+```{r}
+# original plot
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~drv)
+# edited plot --> no chance for comparison
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~drv, scales = 'free')
+#edited plot --> x axis is fixed but different y axis.
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~drv, scales = 'free_y')
+# edited plot -> y axis is fixed but different x axis
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~drv, scales = 'free_x')
+```
+
+2. Usually the space occupied by each panel is equal. This can create problems when different scales are use. Modify the code below so that the y scale differs between the panels in the plot. What happens?
+Use the `space` argument in `facet_grid()` to change the plot above so each bar has the same width again.
+```{r}
+# original plot
+ggplot(mpg) + 
+  geom_bar(aes(y = manufacturer)) + 
+  facet_grid(class ~ .)
+# edited plot
+ggplot(mpg) + 
+  geom_bar(aes(y = manufacturer)) + 
+  facet_grid(class ~ ., space = 'free_y')
+# edited plot
+ggplot(mpg) + 
+  geom_bar(aes(y = manufacturer)) + 
+  facet_grid(class ~ ., space = 'free_y', scales = 'free_y')
+# edited plot
+ggplot(mpg) + 
+  geom_bar(aes(y = manufacturer)) + 
+  facet_grid(class ~ ., scales = 'free_y')
+```
+
+4. Facets can be based on multiple variables by adding them together. Try to recreate the same panels present in the plot below by using `facet_wrap()`
+```{r}
+# original plot
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_grid(year ~ drv)
+# edited plot
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv + year)
+```
+
+*Coordinate*
+. The coordinate system is the fabric you draw your layers on in the end. The default `coord_cartesion` provides the standard rectangular x-y coordinate system. Changing the coordinate system can have dramatic effects.
+. What kind of canvas should the final data be drawn on
+  - ie, how should x and y be interpreted.
+. Limites and transfromation can be applied in scale or in coord
+  - scale will apply it in the beginning
+  - coord will apply it in the end
+  - you usually want coord
+. Extremely useful in cartography (map projections)
+```{r}
+# a polar coordinate system inteprets x and y as radius angle
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  coord_polar()
+# changing what is mapped to angle gives a very differnt plot
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  coord_polar(theta = 'y') + 
+  expand_limits(y = 70)
+# zooming with scale removes data outside limits
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  scale_y_continuous(limits = c(0, 40))
+  #> warning message: 
+      #> Removed 3 rows containing missing values (geom_bar)
+  #> because there is value outside of the limit/scale
+# zooming with coord creates a proper zoom
+ggplot(mpg) + 
+  geom_bar(aes(x = class)) + 
+  coord_cartesian(ylim = c(0, 40))
+```
+
+*Exercise*
+1. In the same way as limits can be set in both the positional scale and the coord, so can transformations, using `coord_trans()`. Modify the code below to apply a log transformation to the y axis; firt using `scale_y_continuous()`, and then using `coord_trans()`. Compare the results - how do they differ?
+```{r}
+# original plot
+ggplot(mpg) + 
+  geom_point(aes(x = hwy, y = displ))
+# edited plot
+ggplot(mpg) + 
+  geom_point(aes(x = hwy, y = displ)) + 
+  scale_y_continuous(trans = 'log')
+# edited plot --> better because it spreads out more
+ggplot(mpg) + 
+  geom_point(aes(x = hwy, y = displ)) + 
+  coord_trans(y = 'log')
+
+```
+
+*Theme*
+. Theming defines the feel and look of your final visualisation and is something you will normally defer to the final polishing of the plot. It is very easy to change looks with a prebuild theme.
+. Stylistic changes to the plot not related to data
+. Can both apply complete themes or modify elements directly
+. Theming is hierachical
+```{r}
+# It is quick to change the overall look with a build-in theme
+ggplot(mpg) + 
+  geom_bar(aes(y = class)) + 
+  facet_wrap(~year) + 
+  theme_minimal()
+```
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(y = class)) + 
+  facet_wrap(~year) + 
+  labs(title = "Number of car models per class",
+       caption = "source: http://fueleconomy.gov",
+       x = NULL,
+       y = NULL) + 
+  scale_x_continuous(expand = c(0, NA)) +
+  theme_minimal() + 
+  theme(
+    text = element_text('Avenir Next Condensed'),
+    strip.text = element_text(face = 'bold',
+                              hjust = 0),
+    plot.caption = element_text(face = 'italic'),
+    panel.grid.major = element_line('white', 
+                                    size = 0.5), 
+    panel.grid.minor = element_blank(), 
+    panel.grid.major.y = element_blank(), 
+    panel.ontop = TRUE
+  )
+```
+
+
