@@ -1,5 +1,5 @@
 # CodingCult
 
-This my first repo and it is stored to practice repo.
+This is my repository for my R Club
 
-I already made a(n) (1) add, (2) commit, and (3) push
+I will use this repository to keep track of all of my readings/homeworks/workshops
