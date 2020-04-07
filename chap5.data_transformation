@@ -562,5 +562,32 @@ flights %>% group_by(flight) %>%
 ```
 
 
-99% of the time a flight is on time. 1% of the time it’s 2 hours late.
+    ### 1d. 99% of the time a flight is on time. 1% of the time it’s 2 hours late.
+```{r}
+flights %>% 
+  mutate(on_time = arr_delay <= 0,
+           late_2hrs= arr_delay >= 120) %>%
+    group_by(flight) %>% 
+   summarise( percent_on_time = sum(on_time) / n(),
+               percent_late_2hrs = sum(late_2hrs) / n() ) %>%
+    filter(percent_on_time >= .90, percent_late_2hrs > .01) %>%
+    arrange(-percent_late_2hrs)
+```
+### 2. Come up with another approach that will give you the same output as not_cancelled %>% count(dest) and not_cancelled %>% count(tailnum, wt = distance) (without using count()).
+```{r}
+flights %>% group_by(dest) %>%
+    tally()
+flights %>% group_by(tailnum) %>%
+    summarise(group_distance = sum(distance))
+```
+
+
+### 3. Our definition of cancelled flights (is.na(dep_delay) | is.na(arr_delay) ) is slightly suboptimal. Why? Which is the most important column?
+----> Because it appears to have identical coverage
+
+### 4. Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?
+
+### 5. Which carrier has the worst delays? Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not? (Hint: think about flights %>% group_by(carrier, dest) %>% summarise(n()))
+
+### 6. What does the sort argument to count() do. When might you use it?
 
