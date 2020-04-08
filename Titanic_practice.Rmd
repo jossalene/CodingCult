@@ -1,0 +1,80 @@
+---
+title: "Titanic"
+author: "Hanh Nguyen"
+date: "4/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Load Titanic
+```{r}
+titanic_raw <- read.csv("C:/Users/Jo/Desktop/CodingCult/practice-repo/titanic.csv")
+titanic_raw
+titanic <- titanic_raw %>% rename(Gender = Sex, Class = Pclass)
+titanic
+```
+The dataset has 10 variables and 887 observations, each observation represents a passenger on the Titanic.
+The 10 variables:
+- Survived: 0 for not survived, 1 for survived
+- Class: 1st, 2nd, and 3rd
+- Name: passenger name
+- Sex: male and female
+- Age
+- Siblings.Spouses.Aboard: number of siblings & spouses of the passenger who were also on board
+- Parents.Children.Aboard: number of parents & children of the passenger who were also on board
+- Fare: The cost of the fare that the passenger paid
+
+_________________
+GENDER & SURVIVAL
+_________________
+Purpose: to see if there is a relationship between gender and survival.
+
+```{r}
+#number of female passenger
+total_female <- titanic %>% summarise(sum(Gender == "female"))
+total_female
+#number of male passeger
+total_male <- titanic %>% summarise(sum(Gender == "male"))
+total_male
+#number of survived female passenger
+survived_female <- titanic %>% count(Gender == "female" & Survived == 1)
+survived_female
+#number of unsurvived female passenger
+unsurvived_female <- titanic %>% count(Gender == "female" & Survived == 0)
+unsurvived_female
+#number of survived male passenger
+survived_male <- titanic %>% count(Gender == "male" & Survived == 1)
+survived_male
+#number of unsurvived male passenger
+unsurvived_male <- titanic %>% count(Gender == "male" & Survived == 0)
+unsurvived_male
+#gender and survival plot
+titanic %>%
+  ggplot(aes(x = Gender, y = Survived)) + geom_col(width = 0.2) +
+  labs(title = "Gender and Survival on the Titanic")
+```
+*Conclusion*
+Female passengers had a significant higher chance of survival than male passengers.
+This makes sense because during the Titanic crash, women were prioritized to get on the rescue boat.
+
+______________
+AGE & SURVIVAL
+______________
+Purpose: to see if there is a relationship between the passenger's age and their chance of survival.
+
+```{r}
+#age-survival
+titanic %>%
+  ggplot(aes(x = Age)) + geom_histogram() + facet_wrap(~Survived)
+
+```
+*Conclusion*
+A large number of people were unable to survive the crash.
+The age that had the highest number of death were 20 years.
+
+
+________________
+CLASS & SURVIVAL
+________________
