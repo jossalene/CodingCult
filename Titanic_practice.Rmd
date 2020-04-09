@@ -10,11 +10,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 Load Titanic
 ```{r}
+library(tidyverse)
 titanic_raw <- read.csv("C:/Users/Jo/Desktop/CodingCult/practice-repo/titanic.csv")
 titanic_raw
 titanic <- titanic_raw %>% rename(Gender = Sex, Class = Pclass)
 titanic
 ```
+___________________
+GENERAL INFORMATION
+___________________
 The dataset has 10 variables and 887 observations, each observation represents a passenger on the Titanic.
 The 10 variables:
 - Survived: 0 for not survived, 1 for survived
@@ -25,6 +29,36 @@ The 10 variables:
 - Siblings.Spouses.Aboard: number of siblings & spouses of the passenger who were also on board
 - Parents.Children.Aboard: number of parents & children of the passenger who were also on board
 - Fare: The cost of the fare that the passenger paid
+
+_________________
+AT A FIRST GLANCE
+_________________
+Purpose: to see basic data and calculation
+```{r}
+#Unsurvived Passenger
+titanic %>% filter(Survived == 0)
+#Survived Passenger
+titanic %>% filter(Survived == 1)
+#Children on the Titanic
+children <- titanic %>% filter(Age < 13)
+children
+#Teens on the Titanic
+teens <- titanic %>% filter(Age >= 13 & Age < 19)
+teens
+#Young aldults on the Titanic
+y_adult <- titanic %>% filter(Age > 18 & Age < 40)
+y_adult
+#Middle-age adults on the Titanic
+mid_adult <- titanic %>% filter(Age >= 40 & Age < 65)
+mid_adult
+#Elderly on the Titanic
+elderly <- titanic %>% filter(Age >= 65)
+elderly
+```
+There is a total of 545 unsurvived passengers and 342 survived passengers.
+
+There were 79 children (0~12yo), 87 teens (13~18yo), 525 young adults (19~39yo), 183 middle-aged adults (41~64yo) and 13 elderly (65yo or above)
+
 
 _________________
 GENDER & SURVIVAL
@@ -68,12 +102,26 @@ Purpose: to see if there is a relationship between the passenger's age and their
 #age-survival
 titanic %>%
   ggplot(aes(x = Age)) + geom_histogram() + facet_wrap(~Survived)
-
+#age with highest death in descending order
+unsurvived_age <- titanic %>% group_by(Age) %>% filter(Survived == 0) %>% count(Age) %>% arrange(desc(n))
+unsurvived_age
+#plot of unsurvived age
+ggplot(unsurvived_age, aes(x = Age, y = n)) + geom_line() + geom_smooth() + labs(title = "Plot of Age and Unsurvival")
+#age with hight survival in descending order
+survived_age <- titanic %>% group_by(Age) %>% filter(Survived == 1) %>% count(Age) %>% arrange(desc(n))
+survived_age
+#plot of survived age
+ggplot(survived_age, aes(x = Age, y = n)) + geom_line() + geom_smooth() + labs(title = "Plot of Age and Survival")
+#survived children
+children %>% filter(Survived == 1)
+#unsurvived children
+children %>% filter(Survived == 0)
 ```
 *Conclusion*
-A large number of people were unable to survive the crash.
-The age that had the highest number of death were 20 years.
-
+A large number of people, who were unable to survive the crash, came from different age range.
+The age that had the highest number of unsurvived passengers were 21 years with 28 counts.
+The age that had the highest number of survived passenger were 24 years with 18 counts.
+There are 43 survived children, and 36 unsurvived children
 
 ________________
 CLASS & SURVIVAL
