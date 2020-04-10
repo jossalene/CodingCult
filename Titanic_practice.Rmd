@@ -38,7 +38,7 @@ Purpose: to see basic data and calculation
 #Unsurvived Passenger
 titanic %>% filter(Survived == 0)
 #Survived Passenger
-titanic %>% filter(Survived == 1)
+survived <- titanic %>% filter(Survived == 1)
 #Children on the Titanic
 children <- titanic %>% filter(Age < 13)
 children
@@ -113,16 +113,72 @@ survived_age
 #plot of survived age
 ggplot(survived_age, aes(x = Age, y = n)) + geom_line() + geom_smooth() + labs(title = "Plot of Age and Survival")
 #survived children
-children %>% filter(Survived == 1)
+nSchildren <- children %>% count(Survived == 1)
+nSchildren
 #unsurvived children
-children %>% filter(Survived == 0)
+children %>% count(Survived == 0)
+# survived teens
+nSteens <- teens %>% count(Survived == 1)
+nSteens
+#unsurvived teens
+teens %>% count(Survived == 0)
+#survived young adults
+nSyAdults <- y_adult %>% count(Survived == 1)
+nSyAdults
+# unsurvived young adults
+y_adult %>% count(Survived == 0)
+#survived middle-aged adults
+nSmAdults <- mid_adult %>% count(Survived == 1)
+nSmAdults
+#unsurvived middle_aged adults
+mid_adult %>% count(Survived == 0)
+#survived elderly
+nSelderly <- elderly %>% count(Survived == 1)
+nSelderly
+#unsurvived elderly
+elderly %>% count(Survived == 0)
+#the only one elderly that was survived
+elderly %>% filter(Survived == 1)
+elderly %>% filter(Age == 80)
 ```
 *Conclusion*
 A large number of people, who were unable to survive the crash, came from different age range.
 The age that had the highest number of unsurvived passengers were 21 years with 28 counts.
 The age that had the highest number of survived passenger were 24 years with 18 counts.
-There are 43 survived children, and 36 unsurvived children
+Out of 79 children, there are 43 survived children, and 36 unsurvived children.
+Out of 87 teens, there are 35 survived teens, and 52 unsurvived teens.
+Out of 526, there are 192 survived young adults, and 333 unsurvived young adults.
+Out of 183 middle-aged adults, there are 71 survived middle-aged adults, and 112 unsurvived middle-aged adults.
+Out of 13 elderly, there is *only 1* of them survived. The survived passenger is Algernon Henry Wilson Barkworth, male, 80yo, *first class*. He is also the *oldest* elderly on the Titanic ukg\.
+
 
 ________________
 CLASS & SURVIVAL
 ________________
+Purpose: to see if class and survival has any relationship with each other.
+```{r}
+#plot survived passenger and boarding class on the Titanic
+ggplot(survived, aes(x = Class, y= Survived)) + geom_col(width = 0.5) + labs(title = "Boarding Class and Survival on the Titanic")
+#number of survived passenger by boarding class
+survived %>% count(Class)
+```
+First class has the highest number of survived passengers (136) while Second Class has the lowest number of survived passengers(87). The Third Class, on the other hand, has 119 survived passengers.
+
+______________________
+AGE - CLASS - SURVIVAL
+______________________
+Purpose: to see how age in different boarding class affect survival
+```{r}
+#survived chidren in First Class
+titanic %>% filter(Class == 1 & Survived == 1) %>% count(Age < 13)
+#survived children in Second Class
+titanic %>% filter(Class == 2 & Survived == 1) %>% count(Age < 13)
+#survived children in Third Class
+titanic %>% filter(Class == 3 & Survived == 1) %>% count(Age < 13)
+```
+On the First Class: 
+    - There are 3 children survived
+On the Second Class:
+    - There are 17 children survived
+On the Third Class:
+    - There are 23 children survived
