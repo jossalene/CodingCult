@@ -16,6 +16,11 @@ titanic_raw
 titanic <- titanic_raw %>% rename(Gender = Sex, Class = Pclass)
 titanic
 ```
+
+```{r}
+str(titanic)
+```
+
 ___________________
 GENERAL INFORMATION
 ___________________
@@ -38,12 +43,12 @@ Purpose: to see basic data and calculation
 #Unsurvived Passenger
 titanic %>% filter(Survived == 0)
 #Survived Passenger
-survived <- titanic %>% filter(Survived == 1)
+total_survived <- titanic %>% filter(Survived == 1)
 #Children on the Titanic
 children <- titanic %>% filter(Age < 13)
 children
 #Teens on the Titanic
-teens <- titanic %>% filter(Age >= 13 & Age < 19)
+teens <- titanic %>% filter(Age >= 13 & Age < 19) 
 teens
 #Young aldults on the Titanic
 y_adult <- titanic %>% filter(Age > 18 & Age < 40)
@@ -85,12 +90,12 @@ survived_male
 unsurvived_male <- titanic %>% count(Gender == "male" & Survived == 0)
 unsurvived_male
 #gender and survival plot
-titanic %>%
-  ggplot(aes(x = Gender, y = Survived)) + geom_col(width = 0.2) +
-  labs(title = "Gender and Survival on the Titanic")
+ggplot(data = titanic, aes(x = Survived)) + geom_bar(aes(fill = Gender), position = position_dodge())
 ```
 *Conclusion*
-Female passengers had a significant higher chance of survival than male passengers.
+- There are 314 female and 573 male on the Titanic.
+- 233 female and 109 male survived.
+- Female passengers had a significant higher chance of survival than male passengers.
 This makes sense because during the Titanic crash, women were prioritized to get on the rescue boat.
 
 ______________
@@ -142,14 +147,14 @@ elderly %>% filter(Survived == 1)
 elderly %>% filter(Age == 80)
 ```
 *Conclusion*
-A large number of people, who were unable to survive the crash, came from different age range.
-The age that had the highest number of unsurvived passengers were 21 years with 28 counts.
-The age that had the highest number of survived passenger were 24 years with 18 counts.
-Out of 79 children, there are 43 survived children, and 36 unsurvived children.
-Out of 87 teens, there are 35 survived teens, and 52 unsurvived teens.
-Out of 526, there are 192 survived young adults, and 333 unsurvived young adults.
-Out of 183 middle-aged adults, there are 71 survived middle-aged adults, and 112 unsurvived middle-aged adults.
-Out of 13 elderly, there is *only 1* of them survived. The survived passenger is Algernon Henry Wilson Barkworth, male, 80yo, *first class*. He is also the *oldest* elderly on the Titanic ukg\.
+- A large number of people, who were unable to survive the crash, came from different age range.
+- The age that had the highest number of unsurvived passengers were 21 years with 28 counts.
+- The age that had the highest number of survived passenger were 24 years with 18 counts.
+- Out of 79 children, there are 43 survived children, and 36 unsurvived children.
+- Out of 87 teens, there are 35 survived teens, and 52 unsurvived teens.
+- Out of 526, there are 192 survived young adults, and 333 unsurvived young adults.
+- Out of 183 middle-aged adults, there are 71 survived middle-aged adults, and 112 unsurvived middle-aged adults.
+- Out of 13 elderly, there is *only 1* of them survived. The survived passenger is Algernon Henry Wilson Barkworth, male, 80yo, *first class*. He is also the *oldest* elderly on the Titanic.
 
 
 ________________
@@ -157,28 +162,61 @@ CLASS & SURVIVAL
 ________________
 Purpose: to see if class and survival has any relationship with each other.
 ```{r}
+#total passenger on First Class
+titanic %>% count(Class == 1)
+#total passenger on Second Class
+titanic %>% count(Class == 2)
+#total passenger on Third Class
+titanic %>% count(Class == 3)
 #plot survived passenger and boarding class on the Titanic
-ggplot(survived, aes(x = Class, y= Survived)) + geom_col(width = 0.5) + labs(title = "Boarding Class and Survival on the Titanic")
+titanic$Class <- factor(titanic$Class, levels = c(1, 2, 3)) 
+
+ggplot(data = titanic, aes(x = Survived)) + geom_bar(aes(fill = Class)) + labs(title = "Boarding Class and Survival on the Titanic")
 #number of survived passenger by boarding class
-survived %>% count(Class)
 ```
-First class has the highest number of survived passengers (136) while Second Class has the lowest number of survived passengers(87). The Third Class, on the other hand, has 119 survived passengers.
+First class has the highest number of survived passengers (136) out of the total of 216 passengers, while Second Class has the lowest number of survived passengers(87) out of the total of 184 passengers. The Third Class, on the other hand, has 119 survived passengers out of 487 passengers.
 
 ______________________
 AGE - CLASS - SURVIVAL
 ______________________
 Purpose: to see how age in different boarding class affect survival
 ```{r}
+#total children in First Class
+titanic %>% filter(Class == 1) %>% count(Age < 13)
 #survived chidren in First Class
 titanic %>% filter(Class == 1 & Survived == 1) %>% count(Age < 13)
+#unsurvived children in First Class
+titanic %>% filter(Class == 1 & Survived == 0 & Age < 13)
+#total children in Second Class
+titanic %>% filter(Class == 2) %>% count(Age < 13)
 #survived children in Second Class
 titanic %>% filter(Class == 2 & Survived == 1) %>% count(Age < 13)
+#total children in Third Class
+titanic %>% filter(Class == 3) %>% count(Age < 13)
 #survived children in Third Class
 titanic %>% filter(Class == 3 & Survived == 1) %>% count(Age < 13)
 ```
-On the First Class: 
-    - There are 3 children survived
-On the Second Class:
-    - There are 17 children survived
-On the Third Class:
-    - There are 23 children survived
+. On the First Class: 
+    - Out of total of 4 children, there are 3 children survived
+    - The only child who were not able to survived is Helen Loraine Allison, age 2.
+. On the Second Class:
+    - Out of total of 17 children, all 17 children survived
+. On the Third Class:
+    - Out of total of 58 children, there are 23 children survived
+    
+```{r}
+titanic$Gender <- ifelse(titanic$Gender == 'male', 0, 1)
+titanic$Siblings.Spouses.Aboard <- as.factor(titanic$Siblings.Spouses.Aboard)
+titanic$Parents.Children.Aboard <- as.factor(titanic$Parents.Children.Aboard)
+```
+
+
+```{r}
+glm(Survived ~ Class + Gender + Age + Siblings.Spouses.Aboard + Parents.Children.Aboard + Fare, data=titanic, family = binomial())
+```
+
+```{r}
+ggplot(data = titanic, aes(Fare, Survived)) + geom_jitter(width = 0, height = 0.05, alpha = .5) +
+  geom_smooth(method = "glm", se = FALSE, method.args = list(family = 'binomial'))
+```
+
