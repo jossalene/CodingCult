@@ -93,6 +93,39 @@ ggplot(diamonds) +
   coord_cartesian(ylim = c(0, 50))
 ```
 
+______________
+Missing Values
+______________
+. Encountering unusual values:
+    1. Drop the entire row with the strange values
+        -> not recommended
+    2. Replacing the unusual values with missing values.
+        -> recommended
+          - *mutate()* to replace the variable with a modified copy
+          - *ifelse()* to replace unusual values with NA
+                    ~ test : a logical vector
+                    ~ yes : result of test if test is TRUE
+                    ~ no : result of test if test is FALSE
+                Alternative: *dplyr::case_when()* - creates a new
+                                    variable that relies on a complex
+                                    combination of existing variables.
+
+```{r}
+diamonds
+# option1: drop entire row
+diamonds2 <- diamonds %>% 
+  filter(between(y, 3, 20))
+diamonds2
+# option2: replacing with NA
+diamonds3 <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+# plot with missing value
+ggplot(data = diamonds3, mapping = aes(x = x, y = y)) + 
+  geom_point()
+# Suppress warning as missing values are removed, set na.rm = TRUE.
+ggplot(data = diamonds3, mapping = aes(x = x, y = y)) + 
+  geom_point(na.rm = TRUE)
+```
 
 
 ________________________
@@ -140,4 +173,15 @@ ggplot(diamonds, aes(x = carat)) + geom_histogram(binwidth = 0.01) + coord_carte
 ```
 --> xlim select the range first and plot the value in the range, thus the plot doesn't look continuous outside of the range
 --> with coord_cartesian, the plot looks more continous to values outside of the range.
+
+_______________________________
+EXERCISE 7.4.1 - Missing Values
+_______________________________
+    
+###1.    What happens to missing values in a histogram? What happens to missing values in a bar chart? Why is there a difference?
+---> Historgram removes missing value on plot.
+---> Bar chart contain missing value on plot as another catergory.
+
+###2.    What does na.rm = TRUE do in mean() and sum()?
+---> na.rm = TRUE ignore NA when calculating mean and sum
 
