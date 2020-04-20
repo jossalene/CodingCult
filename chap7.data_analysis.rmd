@@ -1,0 +1,143 @@
+---
+title: "chap7.data_analysis"
+author: "Hanh Nguyen"
+date: "4/13/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### CHAPTER 7: EXPLORATORY DATA ANALYSIS ###
+
+____________
+INTRODUCTION
+____________
+
+Exploratory Data Analysis = EDA
+```{r}
+#load tidyverse
+library(tidyverse)
+```
+- Goal:
+    . To develop an understanding of your data by using questions as tools to guide your investigation so that focusing on a specific part of your dataset to decide which graphs, models, or transformations to make.
+    . Ask quality questions to generate a large quantity of questions.
+    
+- Questions to look at:
+    1. What type of variation occurs within my variables?
+    2. What tyoe of covariation occurs between my variables?
+
+- Definition:
+    . Variable: a quantity, quality or property that you can measure
+    . Value: the state of a variable when you measure it 
+              --> Value may change from measurement to measurement
+    . Observation: a set of measurements made under similar conditions.
+                  An observations will contain several values, each associated with a different
+                  variable.
+                  ---> Observation can be referred as a data point.
+    . Tabular data: a set of values, each associates with a variable and an observation.
+            - Is *tidy* if each value is placed in its own "cell", each variable in its own column, and each observation in its own row
+
+_________
+Variation
+_________
+. Variation is the tendency of the values ofa variable to change from measurement to measurement.
+        - It is true when measuring quantities, categoricals, or even across different subjects.
+        - Every variable has its own pattern of variation
+
+**Visualising distributions**
+
+. Categorical variable : bar chart
+                          - height : how many observations occurred with each x value
+                          - compute using dplyr::count()
+```{r}
+ggplot(data=diamonds) + geom_bar(mapping=aes(x=cut))
+diamonds %>% count(cut)
+```
+
+. Continuous variable  : histogram
+  - date/time            - devides the x-axis into equally spaced bins, then, use the height
+                            of a bar to display the nuber of observaions that fall in each
+                            bin.
+                          - if wish to overlay multiple histograms in the same plot
+                            -> use geom-freqpoly() - same calculation but displaying the counts
+                                with bars using lines instead
+  - compute by combining dplyr::count() and ggplot2::cut_width()
+```{r}
+ggplot(data=diamonds) + geom_histogram(mapping=aes(x=carat), binwidth = 0.5)
+diamonds %>% count(cut_width(carat, 0.5))
+ggplot(data = diamonds, mapping = aes(x = carat, color = cut)) + geom_freqpoly(binwidth=0.1)
+```
+  
+**Typical values**
+. In both bar charts and histograms, tall bars show the common values of a variable, 
+  and shorter bars show less common values. Places that do not have bars reveal values 
+  that were not seen.
+    - Useful questions: Most common? Rare? Why? Unusual patterns? Explain.
+. Clusters of similar values suggest that subgroups exist.
+    - Useful questions: Similliar? Different? Explain & describe. Misleading?
+    
+**Unusual values**
+. Outliers are observations that are unusual, data points that don't seem to fit the pattern.
+    - Either wrong dat entry or important new science.
+    - coord_cartesian() : make it easy to see to unusual values
+            ~ xlim() : zoom in x axis
+            ~ ylim() : zoom in y axis
+```{r}
+# regular graph
+ggplot(diamonds) + geom_histogram(aes(x = y), binwidth = 0.5)
+# zoom in graph with coord_cartersian()
+ggplot(diamonds) + 
+  geom_histogram(aes(x = y), binwidth = 0.5) + 
+  coord_cartesian(ylim = c(0, 50))
+```
+
+
+
+________________________
+EXERCISE 7.3 - VARIATION
+________________________
+###1.    Explore the distribution of each of the x, y, and z variables in diamonds. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.
+```{r}
+diamonds
+# transform diamonds from wide format to long format
+diamonds_long <- gather(diamonds, side, measurment, x:z, factor_key = TRUE)
+diamonds_long
+# plot diamonds in long format
+ggplot(diamonds_long, aes(x = measurment)) + geom_histogram(aes(fill=side))
+```
+--> x is length, y is width, z is depth.
+
+###2.    Explore the distribution of price. Do you discover anything unusual or surprising? (Hint: Carefully think about the binwidth and make sure you try a wide range of values.)
+```{r}
+#Distribution of the price based on the color of the diamond
+ggplot(diamonds, aes(x = price, color = color)) + geom_freqpoly()
+# Distribution of the price based on the cut of the diamond
+ggplot(diamonds, aes(x = price, color = cut)) + geom_freqpoly()
+# Distribution of price in general in the range from $1000 to $2000
+ggplot(diamonds, aes(x = price)) + geom_freqpoly() + xlim(c(1000, 2000))
+```
+--> It seems that there is no diamond which has price around $1500.
+
+###3.    How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?
+```{r}
+# Count diamonds in 0.99 carat.
+diamonds %>% filter(carat == 0.99) %>% count()
+# Count diamonds in 1 carat.
+diamonds %>% filter(carat == 1) %>% count()
+# plot
+ggplot(diamonds, aes(x = carat)) + geom_histogram() + xlim(c(0.97, 1.05))
+```
+--> There is much more 1 carat than 0.99 carat. It's probably because most people prefer buying their diamond in whole countable units.
+
+###4.    Compare and contrast coord_cartesian() vs xlim() or ylim() when zooming in on a histogram. What happens if you leave binwidth unset? What happens if you try and zoom so only half a bar shows?
+```{r}
+# xlim
+ggplot(diamonds, aes(x = carat)) + geom_histogram(binwidth = 0.01) + xlim(c(0.97, 1.05))
+# coor_cartesian()
+ggplot(diamonds, aes(x = carat)) + geom_histogram(binwidth = 0.01) + coord_cartesian(xlim = c(0.97, 1.05))
+```
+--> xlim select the range first and plot the value in the range, thus the plot doesn't look continuous outside of the range
+--> with coord_cartesian, the plot looks more continous to values outside of the range.
+
