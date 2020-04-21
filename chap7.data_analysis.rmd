@@ -127,6 +127,42 @@ ggplot(data = diamonds3, mapping = aes(x = x, y = y)) +
   geom_point(na.rm = TRUE)
 ```
 
+___________
+Covariation
+___________
+. Variation describes the behavior within a variable.
+. Covariation describes the behavior between variables.
+. Covariation is the tendency for the values of two or more variables
+  to vary together in a related way.
+
+**A categorical and continuous variable**
+. Display *density*, which is the count standardized so that the area
+  under each frequency polygon is one -> make comparison easier.
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price, y = ..density..)) +
+  geom_freqpoly(mapping = aes(color = cut), binwidth = 500)
+```
+. *Boxplot* -  a type of visual shorthand for a distribution of
+              values, consisting:
+                ~ A box that stretches from the 25th percentile of the
+                  distribution to the 75th percentile, a distance 
+                  known as the interquartile range (IQR). In the 
+                  middle of the box is a line that displays the 
+                  median, ie 50th percentile, of the distribution.
+                  --> the spread of the distribution, whether or not
+                      the distribution is symmetric about the median
+                      or skewed to one side.
+                ~ Visual points that display observation that fall
+                  more than 1.5 times the IQR from either edge of the
+                  box. These outlying point are unusual so are plotted
+                  individually
+                ~ A line (or whisker) that extends from each end of
+                  the box and goes to the farthest non-outlier point
+                  in the distribution
+```{r}
+ggplot(diamonds, aes(x=cut, y=price)) + geom_boxplot()
+```
+. *coord_flip()* - flip the coordinate 90degree
 
 ________________________
 EXERCISE 7.3 - VARIATION
@@ -175,7 +211,7 @@ ggplot(diamonds, aes(x = carat)) + geom_histogram(binwidth = 0.01) + coord_carte
 --> with coord_cartesian, the plot looks more continous to values outside of the range.
 
 _______________________________
-EXERCISE 7.4.1 - Missing Values
+EXERCISE 7.4 - Missing Values
 _______________________________
     
 ###1.    What happens to missing values in a histogram? What happens to missing values in a bar chart? Why is there a difference?
@@ -185,3 +221,66 @@ _______________________________
 ###2.    What does na.rm = TRUE do in mean() and sum()?
 ---> na.rm = TRUE ignore NA when calculating mean and sum
 
+______________________________________________________
+EXERCISE 7.5.1 - A categorical and continuous variable
+______________________________________________________
+###1.    Use what you’ve learned to improve the visualisation of the departure times of cancelled vs. non-cancelled flights.
+```{r}
+flights %>% 
+  mutate(canceled_flight = is.na(dep_time) | is.na(arr_time)) %>%
+  ggplot() + geom_boxplot(aes(x=canceled_flight, y=dep_time))
+```
+
+###2.    What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?
+```{r}
+diamonds
+# Carat and cut
+ggplot(diamonds, aes(x= cut, y=carat)) + geom_boxplot()
+# Carat, price and cut
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point()
+```
+--> Carat is the most important variable to predict diamond price
+    because more lower quality diamonds are produced in heavier carat.
+
+###3.    Install the ggstance package, and create a horizontal boxplot. How does this compare to using coord_flip()?
+```{r}
+install.packages("ggstance")
+library(ggstance)
+ggplot(diamonds, aes(x= cut, y=carat)) + 
+  geom_boxplot() + 
+  coord_flip()
+ggplot(diamonds, aes(x= carat, y=cut)) + 
+  geom_boxploth()
+```
+--> They both give the same return
+
+###4.    One problem with boxplots is that they were developed in an era of much smaller datasets and tend to display a prohibitively large number of “outlying values”. One approach to remedy this problem is the letter value plot. Install the lvplot package, and try using geom_lv() to display the distribution of price vs cut. What do you learn? How do you interpret the plots?
+```{r}
+#install.packages("lvplot")
+library(lvplot)
+ggplot(diamonds, aes(x=cut, y=price)) + geom_lv()
+```
+--> The letter value plot shows more quantile compared to boxplot
+
+###5.    Compare and contrast geom_violin() with a facetted geom_histogram(), or a coloured geom_freqpoly(). What are the pros and cons of each method?
+```{r}
+ggplot(diamonds, aes(x=cut, y=price)) + geom_violin()
+ggplot(diamonds, aes(x=price)) + geom_histogram() + facet_wrap(~cut)
+ggplot(diamonds, aes(x=price, color=cut)) + geom_freqpoly() 
+```
+--> geom_violin give the best display for density while geom_freqpoly() can illustrate the price distribution in different cuts at the same time.On the other hand, geom_histogram() more focus on price distribution
+
+###6.    If you have a small dataset, it’s sometimes useful to use geom_jitter() to see the relationship between a continuous and categorical variable. The ggbeeswarm package provides a number of methods similar to geom_jitter(). List them and briefly describe what each one does.
+```{r}
+#install.packages("ggbeeswarm")
+library(ggbeeswarm)
+ggplot(diamonds, aes(x=cut, y=price)) + 
+  geom_jitter(size=0.1, color="pink")
+ggplot(diamonds, aes(x=cut, y=price)) + geom_beeswarm()
+```
+-->`geom_quasirandom()` produces plots that are a mix of jitter 
+                        and violin plots. There are several different
+                        methods that determine exactly how the random
+                        location of the points is generated.
+-->`geom_beeswarm()` produces a plot similar to a violin plot, but 
+                    by offsetting the points.
