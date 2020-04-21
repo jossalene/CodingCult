@@ -164,6 +164,22 @@ ggplot(diamonds, aes(x=cut, y=price)) + geom_boxplot()
 ```
 . *coord_flip()* - flip the coordinate 90degree
 
+**Two categorical variables**
+- To visualize the covariation between categorical variables, 
+  you'll need to count the number of observations for each
+  combination.
+```{r}
+# The size of the dot displays how many observations occurred at each combination of values
+ggplot(data = diamonds) +
+  geom_count(mapping = aes(x = cut, y = color))
+# Compute the count with dplyr
+diamonds %>% 
+  count(color, cut) %>% 
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
+```
+
+
 ________________________
 EXERCISE 7.3 - VARIATION
 ________________________
@@ -284,3 +300,54 @@ ggplot(diamonds, aes(x=cut, y=price)) + geom_beeswarm()
                         location of the points is generated.
 -->`geom_beeswarm()` produces a plot similar to a violin plot, but 
                     by offsetting the points.
+
+
+______________
+EXERCISE 7.5.2
+______________
+###1.    How could you rescale the count dataset above to more clearly show the distribution of cut within colour, or colour within cut?
+```{r}
+# original
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
+# rescale
+diamonds %>%
+  count(color, cut) %>%
+  group_by(color) %>%
+  mutate(prop = n / sum(n)) %>%
+  ggplot(mapping = aes(x = color, y = cut)) +
+  geom_tile(mapping = aes(fill = prop))
+```
+
+
+###2.    Use geom_tile() together with dplyr to explore how average flight delays vary by destination and month of year. What makes the plot difficult to read? How could you improve it?
+
+```{r}
+# first glance plot
+flights %>%
+  group_by(month, dest) %>%
+  summarise(dep_delay = mean(dep_delay, na.rm = TRUE)) %>%
+  ggplot(aes(x = factor(month), y = dest, fill = dep_delay)) +
+  geom_tile()
+
+# improved plot
+flights %>%
+  group_by(month, dest) %>%
+  summarise(dep_delay = mean(dep_delay, na.rm = TRUE)) %>%
+  ggplot(aes(x = factor(month), y = dest, fill = dep_delay)) +
+  geom_tile() +
+  scale_fill_viridis_b()
+```
+
+
+###3.    Why is it slightly better to use aes(x = color, y = cut) rather than aes(x = cut, y = color) in the example above?
+```{r}
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = cut, y = color)) +
+    geom_tile(mapping = aes(fill = n))
+```
+--> Because it is easier to read with a horizontal catergorical variable.
+
