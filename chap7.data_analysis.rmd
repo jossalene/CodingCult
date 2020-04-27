@@ -11,6 +11,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### CHAPTER 7: EXPLORATORY DATA ANALYSIS ###
 
+
+(EXERCISE STARTING AT LINE #270)
+
+
 ____________
 INTRODUCTION
 ____________
@@ -179,6 +183,92 @@ diamonds %>%
     geom_tile(mapping = aes(fill = n))
 ```
 
+**Two continuous variables**
+. Scatterplot is one way to visualized the covariation between 2 continuous variables
+```{r}
+#exponential relationship between the carat size and price of a diamond.
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = carat, y = price))
+```
+. Scatterplot becomes less useful as the size of your dataset grows because points begin to overplot, and pile up into uniform black
+    ---> *alpha()*
+    ---> *geom_bin2d()* and *geom_hex()* - divide the coordinate plan into 2d bins and then
+                                          use a fill color to display how many points fall
+                                          into each bin.
+                                    ~ *geom_bin2d()* creates rectangular bins.
+                                    ~ *geom_hex()* creates hexagonal bins.
+.
+```{r}
+# fix the prolem with large dataset by transparency in *alpha()*
+ggplot(data = diamonds) + 
+  geom_point(mapping = aes(x = carat, y = price), alpha = 1 / 100)
+# fix the prolem with large dataset by geom_bin2d()
+smaller <- diamonds %>% filter(carat < 3)
+ggplot(data = smaller) +
+  geom_bin2d(mapping = aes(x = carat, y = price))
+# fix the prolem with large dataset by geom_hex()
+#install.packages("hexbin")
+ggplot(data = smaller) +
+  geom_hex(mapping = aes(x = carat, y = price))
+```
+. Another option is to bin one continuous variable so it acts like a categorical variable
+  by geom_boxplot()
+      ~ cut_width(x, width) - divides x into bins of width 
+      ~ varwidth = TRUE  - make the width of the boxplot proportional to the # of point
+      ~ cut_number() - display approximately the same # of points in each bin
+```{r}
+ggplot(data = smaller, mapping = aes(x = carat, y = price)) + 
+  geom_boxplot(mapping = aes(group = cut_width(carat, 0.1)))
+
+ggplot(data = smaller, mapping = aes(x = carat, y = price)) + 
+  geom_boxplot(mapping = aes(group = cut_number(carat, 20)))
+```
+
+___________________
+Patterns and models
+___________________
+. Patterns 
+  - provide clues about relationships between variables.
+  - reveal covariation (variation creates uncertainty, covariation reduce uncertainty)
+          ~ If two variable covary -> prediction of one variable from the other variable.
+          ~ If the covariation is due to a causal relationship (a special case) -> use
+            the value of one variable to control the value of the second
+  - Questions:
+            Could this pattern be due to coincidence (ie, randome chance)?
+            How can you describe the relationship implied by the pattern?
+            How strong is the relationship implied by the pattern?
+            What other variables might affect the relationship?
+            Does the relationship change if you look at individual subgroups of the data?
+            
+. Models 
+  - a tool for extracting patterns out of data.
+  - It's possible to use a model to remove the very strong relationship between variables
+```{r}
+library(modelr)
+
+mod <- lm(log(price) ~ log(carat), data = diamonds)
+
+diamonds2 <- diamonds %>% 
+  add_residuals(mod) %>% 
+  mutate(resid = exp(resid))
+
+ggplot(data = diamonds2) + 
+  geom_point(mapping = aes(x = carat, y = resid))
+```
+
+_________________
+7.7 ggplot2 calls
+_________________
+. Formula:
+      ggplot(data=, aes(x=, y=)) + geom_*()
+
+
+
+
+
+________________
+### EXERCISE ###
+________________
 
 ________________________
 EXERCISE 7.3 - VARIATION
@@ -351,3 +441,46 @@ diamonds %>%
 ```
 --> Because it is easier to read with a horizontal catergorical variable.
 
+______________
+EXERCISE 7.5.3
+______________
+###1. Instead of summarising the conditional distribution with a boxplot, you could use a frequency polygon. What do you need to consider when using cut_width() vs cut_number()? How does that impact a visualisation of the 2d distribution of carat and price?
+
+--> cut_width(x, width) divides x into bins of width --> width is concerned
+--> cut_number() display approximately the same number of points in each bin -> # of bin
+
+--> Bin widths and number need to be large enough so that it can remove noise, but not all
+    the signal
+
+###2. Visualise the distribution of carat, partitioned by price.
+```{r}
+# 15 bins
+ggplot(diamonds, aes(x = cut_number(price, 15), y = carat)) +
+  geom_boxplot() +
+  coord_flip() 
+#width of $1500, bodary = 0 ensure that the first bin is 0-1500
+ggplot(diamonds, aes(x = cut_width(price, 1500, boundary = 0), y = carat)) +
+  geom_boxplot(varwidth = TRUE) +
+  coord_flip()
+```
+
+###3. How does the price distribution of very large diamonds compare to small diamonds? Is it as you expect, or does it surprise you?
+--> Distribution of very large diamonds is more variable and more profitable.
+--> Smaller diamonds are only profitable if they are more excetional in color and cut.
+
+###4. Combine two of the techniques you’ve learned to visualise the combined distribution of cut, carat, and price.
+```{r}
+ggplot(diamonds, aes(x = cut_number(carat, 5), y = price, colour = cut)) +
+  geom_boxplot()
+```
+
+###5. Two dimensional plots reveal outliers that are not visible in one dimensional plots. For example, some points in the plot below have an unusual combination of x and y values, which makes the points outliers even though their x and y values appear normal when examined separately.
+```{r}
+# original plot
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = x, y = y)) +
+  coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
+
+```
+Why is a scatterplot a better display than a binned plot for this case?
+--> Because they have a very strong linear relationship, thus, better in scatterplot.
