@@ -1,0 +1,30 @@
+---
+title: "chap9_wrangle_intro"
+author: "Hanh Nguyen"
+date: "4/29/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+### DATA WRANGLING INTRO ###
+
+- Definition: getting data into R in a useful form for visualisation and modelling.
+- 3 main parts to data wrangling: 
+                    Import -> Tidy -> Transform
+                    
+_____________________
+
+- Tibbles - the variant of the data frame
+- Data import - get data of different types into R
+- Tidy data - a consistent way to store data to for transformation, visualization and modelling.
+______________________
+
+Skills:
+    - Relational data - tools for working with multiple interrelated datasets.
+    - Strings - regular expression - a powerful too for manipulating strings
+    - Factors - how R stors categorical data. They are used when a variable has a fixed set of 
+                possible values, or when you want to use a non-alphabetical ordering of a string.
+    - Dates and times - tools for working with dates and dates-time
+     
