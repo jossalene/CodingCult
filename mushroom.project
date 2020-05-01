@@ -8,63 +8,142 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+### MAKING PREDICTION USING MACHINE LEARNING ###
 
 
+- Machine learning utilizes computers to turn data into insight and action.
+- There is many ways to do machine learning: *https://scikit-learn.org/stable/_static/ml_map.png*
+- But today, we focus on training a machine to learn from prior examples
+
+- *Classification*: the task of learning a concept which is a set of categories.
+    ex: classification tasks for driverless cars: when a vehicle's camera observes 
+        an object (a stop sign), must classify object before it can react.
+
+- Let's take a look at our data: *https://www.kaggle.com/uciml/mushroom-classification*
+
+- Raw data
+- clean data
+- Github
+    - I personally prefer to have my data uploaded to github because find it difficult sometime to
+      open a csv file from my computer 
+
+**1. Load the data**
 
 ```{r}
-mushroom <- read.csv("https://raw.githubusercontent.com/jossalene/CodingCult/master/mushrooms.csv")
+#library(tidyverse)
+mushroom_raw <- read.csv("https://raw.githubusercontent.com/jossalene/CodingCult/master/mushrooms.csv")
+head(mushroom_raw)
+mushroom <- read.csv("https://raw.githubusercontent.com/jossalene/CodingCult/master/mushrooms_clean.csv")
 head(mushroom)
 str(mushroom)
+summary(mushroom)
 ```
 
-```{r}
-mushrooms <- mushroom[,!names(mushroom) %in% c("population", "habitat")]
-head(mushrooms)
-str(mushrooms)
-```
+***GOAL: Predict whether a mushroom is poisonous or not, based on all of its features/habitat/population***
+          
+- As our data is text data and categorical, we will use **NAIVE-BAYES method** to generate a model to make this prediction
+  -> refer again to map: ![ml_map](https://scikit-learn.org/stable/_static/ml_map.png)
+
+**Naive-Bayes**
+
+. Naive Bayes algorithm uses a shortcut to approximate the conditional probability we hope to compute.
+    It assummes that the events are independent, thus, the joint probability can be computed by 
+    multiplying the individual probabilities.
+    
+                          P(A|B) = P(A and B) / P(B)
+                          
+![NaiveBayes](https://raw.githubusercontent.com/jossalene/CodingCult/master/NaiveBayes.PNG)
+
+                          
+          (reading: https://becominghuman.ai/naive-bayes-theorem-d8854a41ea08)
+    
+. The problem of the method is that if there is a zero in the multiplification chain, the result will be
+  zero. To solve this problem, adding a small number, ussually 1 (laplace = 1) in each individual multiplifications to eliminate the power (The Laplace correction).
+
+![NaiveBayes1](https://raw.githubusercontent.com/jossalene/CodingCult/master/NaiveBayes1.PNG)
+
+![Laplace](https://raw.githubusercontent.com/jossalene/CodingCult/master/Laplace.PNG)
 
 
-Prepare data for training and testing
+         # building a Naive Bayes model
+               
+           library(naivebayes)
+           model <- naive_bayes(<target-column> ~ <variable-column>, data = <train-datat>, laplace = 1)
+           
+                 
+         # making prediction
+                 
+            predict(model, newdata = <test-data>)
+                 
+
+
+**2. Prepare data for training and testing**
+
 ```{r}
 set.seed(2) # divide the data into 2 parts
-# sampling with replacement so that the two divided parts (70% and 30%) are independent events from each other.
-seed <- sample(2, nrow(mushroom), prob = c(0.7,0.3), replace = T )
+# sampling with replacement so that the two divided parts (75% and 25%) are independent events from each other.
+seed <- sample(2, nrow(mushroom), prob = c(0.75,0.25), replace = TRUE )
 #select 70% observations in seed == 1 to train the model
-mushroon_train <- mushroom[seed == 1,] 
+mushroom_train <- mushroom[seed == 1,] 
 #select 30% observations in seed == 2 to test the model by validating and making prediction
-mushroon_test <- mushroom[seed == 2,] 
+mushroom_test <- mushroom[seed == 2,] 
+# glimpse at mushroom_train and mushroom_test
+library(dplyr)
+glimpse(mushroom_train)
+glimpse(mushroom_test)
 ```
 
-      # building a Naive Bayes model
-      library(naivebayes)
-      model <- naive_bayes(<target-column> ~ <variable-column>, data = <dataset>)
-      
+**3. Install/Load "naivebayes" package**
+
 ```{r}
 #install.packages("naivebayes")
 #library(naivebayes)
 ```
-   
+
+**4. Builind prediction model** 
+         
+        model <- naive_bayes(<target-column> ~ <variable-column>, data = <train-datat>, laplace = 1)
+    
 ```{r}
-mushroom_model <- naive_bayes(class ~ . , data = mushrooms, laplace = 1)
+mushroom_model <- naive_bayes(class ~ . , data = mushroom_train, laplace = 1)
 mushroom_model
 ```
 
+**5. Test prediction model**
+
+                        prediction <- predict(model, newdata = <test-data>)
+                        
 ```{r}
 # test model for classification
-nb_preds <- predict(mushroom_model, newdata = mushroon_test)
-table(mushroon_test$class, nb_preds)
+mushroom_predict <- predict(mushroom_model, newdata = mushroom_test)
+mushroom_predict
 ```
 
 
+**6. Check confusion matrix for accuracy and more**
+
+(reading: https://towardsdatascience.com/confusion-matrix-and-class-statistics-68b79f4f510b)
+
+![.1566189818](https://devopedia.org/images/article/208/9787.1566189818.png)
+
+Sensitivity - measures how apt the model is to detecting events in the positive class.
+            = TP / (TP + FN)
+            
+Specificity - measures how exact the assignment to the positive class is.
+            = TN / (FP + TN)
+            
 ```{r}
 library(caret)
-confusionMatrix(nb_preds, mushroon_test$class)
+confusionMatrix(mushroom_predict, mushroom_test$class)
 ```
 
+---> Model Prediction: Predict
+            Accuracy = 94%
+            Sensitivity = 99% 
+                        -> There is ~99%  of the time we predict a non poisonous mushroom as non-poisonous.
+                        -> There is ~1% of the time we predict a non poisonous mushroom as poisonous.
+            Specitivity = 89%
+                        -> There is ~90% of the time we predict a poisonous mushroom as poisonous.
+                        -> There is ~10% of the time we predict a poisonous mushroom as non-poisonous
 
-```{r}
-# test model for probability
-predict(mushroom_model, newdata = mushroon_test)
-```
-  
   
