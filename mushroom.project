@@ -1,0 +1,70 @@
+---
+title: "mushroom.project"
+author: "Hanh Nguyen"
+date: "5/1/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+mushroom <- read.csv("https://raw.githubusercontent.com/jossalene/CodingCult/master/mushrooms.csv")
+head(mushroom)
+str(mushroom)
+```
+
+```{r}
+mushrooms <- mushroom[,!names(mushroom) %in% c("population", "habitat")]
+head(mushrooms)
+str(mushrooms)
+```
+
+
+Prepare data for training and testing
+```{r}
+set.seed(2) # divide the data into 2 parts
+# sampling with replacement so that the two divided parts (70% and 30%) are independent events from each other.
+seed <- sample(2, nrow(mushroom), prob = c(0.7,0.3), replace = T )
+#select 70% observations in seed == 1 to train the model
+mushroon_train <- mushroom[seed == 1,] 
+#select 30% observations in seed == 2 to test the model by validating and making prediction
+mushroon_test <- mushroom[seed == 2,] 
+```
+
+      # building a Naive Bayes model
+      library(naivebayes)
+      model <- naive_bayes(<target-column> ~ <variable-column>, data = <dataset>)
+      
+```{r}
+#install.packages("naivebayes")
+#library(naivebayes)
+```
+   
+```{r}
+mushroom_model <- naive_bayes(class ~ . , data = mushrooms, laplace = 1)
+mushroom_model
+```
+
+```{r}
+# test model for classification
+nb_preds <- predict(mushroom_model, newdata = mushroon_test)
+table(mushroon_test$class, nb_preds)
+```
+
+
+```{r}
+library(caret)
+confusionMatrix(nb_preds, mushroon_test$class)
+```
+
+
+```{r}
+# test model for probability
+predict(mushroom_model, newdata = mushroon_test)
+```
+  
+  
